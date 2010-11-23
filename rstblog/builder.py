@@ -161,7 +161,7 @@ class BuildError(ValueError):
 
 
 class Builder(object):
-    default_ignores = ('.*', '_*', 'config.yml')
+    default_ignores = ('.*', '_*', 'config.yml', 'Makefile', 'README')
     default_programs = {
         '*.rst':    'rst'
     }
