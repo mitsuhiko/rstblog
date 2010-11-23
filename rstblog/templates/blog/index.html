@@ -4,7 +4,7 @@
 
   {%- for entry in pagination.get_slice() %}
   <div class=entry-overview>
-    <div class=date>{{ format_date(entry.pub_date, format='short') }}</div>
+    <div class=date>{{ format_date(entry.pub_date, format='medium') }}</div>
     <div class=detail>
       <h1><a href="{{ link_to('page', slug=entry.slug) }}">{{ entry.title }}</a></h1>
       {% if entry.summary %}
