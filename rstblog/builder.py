@@ -309,6 +309,7 @@ class Builder(object):
         return False
 
     def run(self):
+        self.storage.clear()
         contexts = list(self.iter_contexts())
 
         for context in contexts:

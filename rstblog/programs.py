@@ -125,7 +125,7 @@ class RSTProgram(TemplatedProgram):
             if not line:
                 break
             buffer.append(line)
-        return self.context.render_rst(u'\n'.join(buffer)).get('title')
+        return self.context.render_rst('\n'.join(buffer).decode('utf-8')).get('title')
 
     def get_fragments(self):
         if self._fragment_cache is not None:
