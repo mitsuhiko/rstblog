@@ -15,7 +15,7 @@ from rstblog.config import Config
 from rstblog.builder import Builder
 
 
-def run(project_folder):
+def get_builder(project_folder):
     """Runs the builder for the given project folder."""
     config_filename = os.path.join(project_folder, 'config.yml')
     config = Config()
@@ -23,16 +23,26 @@ def run(project_folder):
         raise ValueError('root config file is required')
     with open(config_filename) as f:
         config = config.add_from_file(f)
-    builder = Builder(project_folder, config)
-    builder.run()
+    return Builder(project_folder, config)
 
 
 def main():
     """Entrypoint for the console script."""
-    if len(sys.argv) not in (1, 2):
-        print >> sys.stderr, 'usage: rstblog <folder>'
-    elif len(sys.argv) == 2:
-        folder = sys.argv[1]
+    if len(sys.argv) not in (1, 2, 3):
+        print >> sys.stderr, 'usage: rstblog <action> <folder>'
+    if len(sys.argv) >= 2:
+        action = sys.argv[1]
+    else:
+        action = 'build'
+    if len(sys.argv) >= 3:
+        folder = sys.argv[2]
     else:
         folder = os.getcwd()
-    run(folder)
+    if action not in ('build', 'serve'):
+        print >> sys.stderr, 'unknown action', action
+    builder = get_builder(folder)
+
+    if action == 'build':
+        builder.run()
+    else:
+        builder.debug_serve()

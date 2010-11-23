@@ -89,6 +89,8 @@ def write_tag_files(builder):
 def setup(builder):
     after_file_prepaired.connect(remember_tags)
     before_build_finished.connect(write_tag_files)
-    builder.register_url('tag', config_key='modules.tags.tag_url')
-    builder.register_url('tagcloud', config_key='modules.tags.cloud_url')
+    builder.register_url('tag', config_key='modules.tags.tag_url',
+                         config_default='/tags/<tag>/')
+    builder.register_url('tagcloud', config_key='modules.tags.cloud_url',
+                         config_default='/tags/')
     builder.jinja_env.globals['get_tags'] = get_tags

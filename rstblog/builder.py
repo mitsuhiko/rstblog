@@ -40,7 +40,7 @@ url_parts_re = re.compile(r'\$(\w+|{[^}]+})')
 class Context(object):
     """Per rendering information"""
 
-    def __init__(self, builder, config, source_filename):
+    def __init__(self, builder, config, source_filename, prepare=False):
         self.builder = builder
         self.config = config
         self.title = 'Untitled'
@@ -54,8 +54,13 @@ class Context(object):
                 config, source_filename)
         self.program = self.builder.programs[self.program_name](self)
         self.destination_filename = self.program.get_desired_filename()
-        self.program.prepare()
-        after_file_prepaired.send(self)
+        if prepare:
+            self.program.prepare()
+            after_file_prepaired.send(self)
+
+    @property
+    def is_new(self):
+        return not os.path.exists(self.full_destination_filename)
 
     @property
     def slug(self):
@@ -93,11 +98,11 @@ class Context(object):
 
     @property
     def needs_build(self):
-        return True
+        if self.is_new:
+            return True
         src = self.full_source_filename
         dst = self.full_destination_filename
-        return not os.path.isfile(dst) or \
-               os.path.getmtime(dst) < os.path.getmtime(src)
+        return os.path.getmtime(dst) < os.path.getmtime(src)
 
     def get_default_template_context(self):
         return {
@@ -224,9 +229,10 @@ class Builder(object):
             os.makedirs(folder)
         return open(filename, mode)
 
-    def register_url(self, key, rule=None, config_key=None, **extra):
+    def register_url(self, key, rule=None, config_key=None,
+                     config_default=None, **extra):
         if config_key is not None:
-            rule = self.config.root_get(config_key)
+            rule = self.config.root_get(config_key, config_default)
         self.url_map.add(Rule(rule, endpoint=key, **extra))
 
     def open_static_file(self, filename, mode='w'):
@@ -279,8 +285,7 @@ class Builder(object):
     def format_date(self, date=None, format='medium'):
         return dates.format_date(date, format, locale=self.locale)
 
-    def run(self):
-        contexts = []
+    def iter_contexts(self, prepare=True):
         last_config = self.config
         cutoff = len(self.project_folder) + 1
         for dirpath, dirnames, filenames in os.walk(self.project_folder):
@@ -294,10 +299,30 @@ class Builder(object):
             filenames = self.filter_files(filenames, local_config)
 
             for filename in filenames:
-                contexts.append(Context(self, local_config,
-                                        os.path.join(dirpath[cutoff:], filename)))
+                yield Context(self, local_config, os.path.join(
+                    dirpath[cutoff:], filename), prepare)
+
+    def anything_needs_build(self):
+        for context in self.iter_contexts(prepare=False):
+            if context.needs_build:
+                return True
+        return False
+
+    def run(self):
+        contexts = list(self.iter_contexts())
 
         for context in contexts:
-            context.run()
+            if context.needs_build:
+                key = context.is_new and 'A' or 'U'
+                context.run()
+                print key, context.source_filename
 
         before_build_finished.send(self)
+
+    def debug_serve(self, host='127.0.0.1', port=5000):
+        from rstblog.server import Server
+        print 'Serving on http://%s:%d/' % (host, port)
+        try:
+            Server(host, port, self).serve_forever()
+        except KeyboardInterrupt:
+            pass

@@ -63,7 +63,8 @@ def test_pattern(path, pattern):
 
 def process_blog_entry(context):
     if context.pub_date is None:
-        pattern = context.config.get('modules.blog.pub_date_match')
+        pattern = context.config.get('modules.blog.pub_date_match',
+                                     '/<int:year>/<int:month>/<int:day>/')
         if pattern is not None:
             rv = test_pattern(context.slug, pattern)
             if rv is not None:
@@ -101,8 +102,8 @@ def get_recent_blog_entries(context, limit=10):
 
 
 def write_index_page(builder):
-    use_pagination = builder.config.root_get('modules.blog.use_pagination')
-    per_page = builder.config.root_get('modules.blog.per_page') or 10
+    use_pagination = builder.config.root_get('modules.blog.use_pagination', True)
+    per_page = builder.config.root_get('modules.blog.per_page', 10)
     entries = get_all_entries(builder)
     pagination = Pagination(builder, entries, 1, per_page, 'blog_index')
     while 1:
@@ -166,14 +167,19 @@ def setup(builder):
     after_file_prepaired.connect(process_blog_entry)
     before_build_finished.connect(write_blog_files)
     builder.register_url('blog_index', config_key='modules.blog.index_url',
-                         defaults={'page': 1})
-    builder.register_url('blog_index', config_key='modules.blog.paged_index_url')
-    builder.register_url('blog_archive', config_key='modules.blog.archive_url')
+                         config_default='/', defaults={'page': 1})
+    builder.register_url('blog_index', config_key='modules.blog.paged_index_url',
+                         config_default='/page/<page>/')
+    builder.register_url('blog_archive', config_key='modules.blog.archive_url',
+                         config_default='/archive/')
     builder.register_url('blog_archive',
-                         config_key='modules.blog.year_archive_url')
+                         config_key='modules.blog.year_archive_url',
+                         config_default='/<year>/')
     builder.register_url('blog_archive',
-                         config_key='modules.blog.month_archive_url')
-    builder.register_url('blog_feed', config_key='modules.blog.feed_url')
+                         config_key='modules.blog.month_archive_url',
+                         config_default='/<year>/<month>/')
+    builder.register_url('blog_feed', config_key='modules.blog.feed_url',
+                         config_default='/feed.atom')
     builder.jinja_env.globals.update(
         get_recent_blog_entries=get_recent_blog_entries
     )
