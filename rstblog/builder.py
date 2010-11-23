@@ -212,9 +212,10 @@ class Builder(object):
         return self.url_adapter.build(_key, values)
 
     def get_link_filename(self, _key, **values):
-        return os.path.join(self.default_output_folder,
-                            self.link_to(_key, **values).strip('/'),
-                            'index.html')
+        link = self.link_to(_key, **values).lstrip('/')
+        if not link or link.endswith('/'):
+            link += 'index.html'
+        return os.path.join(self.default_output_folder, link)
 
     def open_link_file(self, _key, mode='w', **values):
         filename = self.get_link_filename(_key, **values)
@@ -226,9 +227,6 @@ class Builder(object):
     def register_url(self, key, rule=None, config_key=None, **extra):
         if config_key is not None:
             rule = self.config.root_get(config_key)
-        rule = '/' + rule.strip('/')
-        if not rule.endswith('/'):
-            rule += '/'
         self.url_map.add(Rule(rule, endpoint=key, **extra))
 
     def open_static_file(self, filename, mode='w'):

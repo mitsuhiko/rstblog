@@ -8,11 +8,15 @@
     :copyright: (c) 2010 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import with_statement
+
 from datetime import datetime, date
+from urlparse import urljoin
 
 from jinja2 import contextfunction
 
 from werkzeug.routing import Rule, Map, NotFound
+from werkzeug.contrib.atom import AtomFeed
 
 from rstblog.signals import after_file_prepaired, \
      before_build_finished
@@ -137,7 +141,19 @@ def write_archive_pages(builder):
 
 
 def write_feed(builder):
-    pass
+    blog_author = builder.config.root_get('author')
+    url = builder.config.root_get('canonical_url') or 'http://localhost/'
+    feed = AtomFeed(u'Recent Blog Posts',
+                    subtitle=u'Recent blog posts',
+                    feed_url=urljoin(url, builder.link_to('blog_feed')),
+                    url=url)
+    for entry in get_all_entries(builder)[:10]:
+        feed.add(entry.title, unicode(entry.render_contents()),
+                 content_type='html', author=blog_author,
+                 url=urljoin(url, entry.slug),
+                 updated=entry.pub_date)
+    with builder.open_link_file('blog_feed') as f:
+        f.write(feed.to_string().encode('utf-8') + '\n')
 
 
 def write_blog_files(builder):
@@ -157,6 +173,7 @@ def setup(builder):
                          config_key='modules.blog.year_archive_url')
     builder.register_url('blog_archive',
                          config_key='modules.blog.month_archive_url')
+    builder.register_url('blog_feed', config_key='modules.blog.feed_url')
     builder.jinja_env.globals.update(
         get_recent_blog_entries=get_recent_blog_entries
     )
