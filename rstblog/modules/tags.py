@@ -1,0 +1,94 @@
+# -*- coding: utf-8 -*-
+"""
+    rstblog.modules.tags
+    ~~~~~~~~~~~~~~~~~~~~
+
+    Implements tagging.
+
+    :copyright: (c) 2010 by Armin Ronacher.
+    :license: BSD, see LICENSE for more details.
+"""
+from math import log
+
+from jinja2 import contextfunction
+
+from rstblog.signals import after_file_prepaired, \
+     before_build_finished
+
+
+class Tag(object):
+
+    def __init__(self, name, count):
+        self.name = name
+        self.count = count
+        self.size = 100 + log(count or 1) * 20
+
+
+@contextfunction
+def get_tags(context, limit=50):
+    tags = get_tag_summary(context['builder'])
+    if limit:
+        tags.sort(key=lambda x: -x.count)
+        tags = tags[:limit]
+    tags.sort(key=lambda x: x.name.lower())
+    return tags
+
+
+def get_tag_summary(builder):
+    storage = builder.get_storage('tags')
+    by_tag = storage.get('by_tag', {})
+    result = []
+    for tag, tagged in by_tag.iteritems():
+        result.append(Tag(tag, len(tagged)))
+    result.sort(key=lambda x: x.count)
+    return result
+
+
+def get_tagged_entries(builder, tag):
+    if isinstance(tag, Tag):
+        tag = tag.name
+    storage = builder.get_storage('tags')
+    by_tag = storage.get('by_tag', {})
+    return by_tag.get(tag) or []
+
+
+def remember_tags(context):
+    tags = context.config.merged_get('tags') or []
+    storage = context.builder.get_storage('tags')
+    by_file = storage.setdefault('by_file', {})
+    by_file[context.source_filename] = tags
+    by_tag = storage.setdefault('by_tag', {})
+    for tag in tags:
+        by_tag.setdefault(tag, []).append(context)
+    context.tags = frozenset(tags)
+
+
+def write_tagcloud_page(builder):
+    with builder.open_link_file('tagcloud') as f:
+        rv = builder.render_template('tagcloud.html')
+        f.write(rv.encode('utf-8') + '\n')
+
+
+def write_tag_page(builder, tag):
+    entries = get_tagged_entries(builder, tag)
+    entries.sort(key=lambda x: (x.title or '').lower())
+    with builder.open_link_file('tag', tag=tag.name) as f:
+        rv = builder.render_template('tag.html', {
+            'tag':      tag,
+            'entries':  entries
+        })
+        f.write(rv.encode('utf-8') + '\n')
+
+
+def write_tag_files(builder):
+    write_tagcloud_page(builder)
+    for tag in get_tag_summary(builder):
+        write_tag_page(builder, tag)
+
+
+def setup(builder):
+    after_file_prepaired.connect(remember_tags)
+    before_build_finished.connect(write_tag_files)
+    builder.register_url('tag', config_key='modules.tags.tag_url')
+    builder.register_url('tagcloud', config_key='modules.tags.cloud_url')
+    builder.jinja_env.globals['get_tags'] = get_tags

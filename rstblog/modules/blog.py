@@ -1,0 +1,162 @@
+# -*- coding: utf-8 -*-
+"""
+    rstblog.modules.blog
+    ~~~~~~~~~~~~~~~~~~~~
+
+    The blog component.
+
+    :copyright: (c) 2010 by Armin Ronacher.
+    :license: BSD, see LICENSE for more details.
+"""
+from datetime import datetime, date
+
+from jinja2 import contextfunction
+
+from werkzeug.routing import Rule, Map, NotFound
+
+from rstblog.signals import after_file_prepaired, \
+     before_build_finished
+from rstblog.utils import Pagination
+
+
+class MonthArchive(object):
+
+    def __init__(self, builder, year, month, entries):
+        self.builder = builder
+        self.year = year
+        self.month = month
+        self.entries = entries
+
+    @property
+    def month_name(self):
+        return self.builder.format_date(date(self.year, self.month, 1),
+                                        format='MMMM')
+
+    @property
+    def count(self):
+        return len(self.entries)
+
+
+class YearArchive(object):
+
+    def __init__(self, builder, year, months):
+        self.year = year
+        self.months = [MonthArchive(builder, year, month, entries)
+                       for month, entries in months.iteritems()]
+        self.months.sort(key=lambda x: -x.month)
+        self.count = sum(len(x.entries) for x in self.months)
+
+
+def test_pattern(path, pattern):
+    pattern = '/' + pattern.strip('/') + '/<path:extra>'
+    adapter = Map([Rule(pattern)]).bind('dummy.invalid')
+    try:
+        endpoint, values = adapter.match(path.strip('/'))
+    except NotFound:
+        return
+    return values['year'], values['month'], values['day']
+
+
+def process_blog_entry(context):
+    if context.pub_date is None:
+        pattern = context.config.get('modules.blog.pub_date_match')
+        if pattern is not None:
+            rv = test_pattern(context.slug, pattern)
+            if rv is not None:
+                context.pub_date = datetime(*rv)
+
+    if context.pub_date is not None:
+        context.builder.get_storage('blog') \
+            .setdefault(context.pub_date.year, {}) \
+            .setdefault(context.pub_date.month, []).append(context)
+
+
+def get_all_entries(builder):
+    """Returns all blog entries in reverse order"""
+    result = []
+    storage = builder.get_storage('blog')
+    years = storage.items()
+    for year, months in years:
+        for month, contexts in months.iteritems():
+            result.extend(contexts)
+    result.sort(key=lambda x: x.pub_date, reverse=True)
+    return result
+
+
+def get_archive_summary(builder):
+    """Returns a summary of the stuff in the archives."""
+    storage = builder.get_storage('blog')
+    years = storage.items()
+    years.sort(key=lambda x: -x[0])
+    return [YearArchive(builder, year, months) for year, months in years]
+
+
+@contextfunction
+def get_recent_blog_entries(context, limit=10):
+    return get_all_entries(context['builder'])[:limit]
+
+
+def write_index_page(builder):
+    use_pagination = builder.config.root_get('modules.blog.use_pagination')
+    per_page = builder.config.root_get('modules.blog.per_page') or 10
+    entries = get_all_entries(builder)
+    pagination = Pagination(builder, entries, 1, per_page, 'blog_index')
+    while 1:
+        with builder.open_link_file('blog_index', page=pagination.page) as f:
+            rv = builder.render_template('blog/index.html', {
+                'pagination':       pagination,
+                'show_pagination':  use_pagination
+            })
+            f.write(rv.encode('utf-8') + '\n')
+            if not use_pagination or not pagination.has_next:
+                break
+            pagination = pagination.get_next()
+
+
+def write_archive_pages(builder):
+    archive = get_archive_summary(builder)
+    with builder.open_link_file('blog_archive') as f:
+        rv = builder.render_template('blog/archive.html', {
+            'archive':      archive
+        })
+        f.write(rv.encode('utf-8') + '\n')
+
+    for entry in archive:
+        with builder.open_link_file('blog_archive', year=entry.year) as f:
+            rv = builder.render_template('blog/year_archive.html', {
+                'entry':    entry
+            })
+            f.write(rv.encode('utf-8') + '\n')
+        for subentry in entry.months:
+            with builder.open_link_file('blog_archive', year=entry.year,
+                                        month=subentry.month) as f:
+                rv = builder.render_template('blog/month_archive.html', {
+                    'entry':    subentry
+                })
+                f.write(rv.encode('utf-8') + '\n')
+
+
+def write_feed(builder):
+    pass
+
+
+def write_blog_files(builder):
+    write_index_page(builder)
+    write_archive_pages(builder)
+    write_feed(builder)
+
+
+def setup(builder):
+    after_file_prepaired.connect(process_blog_entry)
+    before_build_finished.connect(write_blog_files)
+    builder.register_url('blog_index', config_key='modules.blog.index_url',
+                         defaults={'page': 1})
+    builder.register_url('blog_index', config_key='modules.blog.paged_index_url')
+    builder.register_url('blog_archive', config_key='modules.blog.archive_url')
+    builder.register_url('blog_archive',
+                         config_key='modules.blog.year_archive_url')
+    builder.register_url('blog_archive',
+                         config_key='modules.blog.month_archive_url')
+    builder.jinja_env.globals.update(
+        get_recent_blog_entries=get_recent_blog_entries
+    )
