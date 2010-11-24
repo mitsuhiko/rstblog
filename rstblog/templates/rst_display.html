@@ -11,7 +11,7 @@
   {{ rst.fragment }}
 
   {% if ctx.tags %}
-  <p class=tags>This entry is was tagged
+  <p class=tags>This entry was tagged
     {% for tag in ctx.tags|sort(case_sensitive=true) %}
       {%- if not loop.first and not loop.last %}, {% endif -%}
       {%- if loop.last and not loop.first %} and {% endif %}
