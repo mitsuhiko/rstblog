@@ -20,7 +20,7 @@ def get_builder(project_folder):
     config_filename = os.path.join(project_folder, 'config.yml')
     config = Config()
     if not os.path.isfile(config_filename):
-        raise ValueError('root config file is required')
+        raise ValueError('root config file "%s" is required' % config_filename)
     with open(config_filename) as f:
         config = config.add_from_file(f)
     return Builder(project_folder, config)
