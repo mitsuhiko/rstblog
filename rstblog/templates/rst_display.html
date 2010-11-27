@@ -2,7 +2,7 @@
 {% block title %}{{ rst.title }}{% endblock %}
 {% block body %}
   {%- if not config.hide_title %}
-  <h1>{{ rst.html_title }}</h1>
+  {{ rst.html_title }}
   {%- endif %}
   {% if ctx.pub_date %}
   <p class=date>written on {{ format_date(ctx.pub_date, format='full') }}

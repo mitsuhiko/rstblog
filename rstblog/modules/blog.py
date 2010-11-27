@@ -30,6 +30,7 @@ class MonthArchive(object):
         self.year = year
         self.month = month
         self.entries = entries
+        entries.sort(key=lambda x: x.pub_date, reverse=True)
 
     @property
     def month_name(self):
