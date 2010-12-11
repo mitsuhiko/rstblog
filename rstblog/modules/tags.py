@@ -9,8 +9,11 @@
     :license: BSD, see LICENSE for more details.
 """
 from math import log
+from urlparse import urljoin
 
 from jinja2 import contextfunction
+
+from werkzeug.contrib.atom import AtomFeed
 
 from rstblog.signals import after_file_prepared, \
      before_build_finished
@@ -69,6 +72,22 @@ def write_tagcloud_page(builder):
         f.write(rv.encode('utf-8') + '\n')
 
 
+def write_tag_feed(builder, tag):
+    blog_author = builder.config.root_get('author')
+    url = builder.config.root_get('canonical_url') or 'http://localhost/'
+    feed = AtomFeed(u'Recent Blog Posts',
+                    subtitle=u'Recent blog posts',
+                    feed_url=urljoin(url, builder.link_to('blog_feed')),
+                    url=url)
+    for entry in get_tagged_entries(builder, tag)[:10]:
+        feed.add(entry.title, unicode(entry.render_contents()),
+                 content_type='html', author=blog_author,
+                 url=urljoin(url, entry.slug),
+                 updated=entry.pub_date)
+    with builder.open_link_file('tagfeed', tag=tag.name) as f:
+        f.write(feed.to_string().encode('utf-8') + '\n')
+
+
 def write_tag_page(builder, tag):
     entries = get_tagged_entries(builder, tag)
     entries.sort(key=lambda x: (x.title or '').lower())
@@ -84,6 +103,7 @@ def write_tag_files(builder):
     write_tagcloud_page(builder)
     for tag in get_tag_summary(builder):
         write_tag_page(builder, tag)
+        write_tag_feed(builder, tag)
 
 
 def setup(builder):
@@ -91,6 +111,8 @@ def setup(builder):
     before_build_finished.connect(write_tag_files)
     builder.register_url('tag', config_key='modules.tags.tag_url',
                          config_default='/tags/<tag>/')
+    builder.register_url('tagfeed', config_key='modules.tags.tag_feed_url',
+                         config_default='/tags/<tag>/feed.atom')
     builder.register_url('tagcloud', config_key='modules.tags.cloud_url',
                          config_default='/tags/')
     builder.jinja_env.globals['get_tags'] = get_tags
