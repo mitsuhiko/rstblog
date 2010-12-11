@@ -12,7 +12,7 @@ from math import log
 
 from jinja2 import contextfunction
 
-from rstblog.signals import after_file_prepaired, \
+from rstblog.signals import after_file_prepared, \
      before_build_finished
 
 
@@ -87,7 +87,7 @@ def write_tag_files(builder):
 
 
 def setup(builder):
-    after_file_prepaired.connect(remember_tags)
+    after_file_prepared.connect(remember_tags)
     before_build_finished.connect(write_tag_files)
     builder.register_url('tag', config_key='modules.tags.tag_url',
                          config_default='/tags/<tag>/')

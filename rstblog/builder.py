@@ -24,7 +24,7 @@ from werkzeug import url_unquote
 
 from rstblog.signals import before_file_processed, \
      before_template_rendered, before_build_finished, \
-     before_file_built, after_file_prepaired
+     before_file_built, after_file_prepared
 from rstblog.modules import find_module
 from rstblog.programs import RSTProgram, CopyProgram
 
@@ -57,7 +57,7 @@ class Context(object):
         self.destination_filename = self.program.get_desired_filename()
         if prepare:
             self.program.prepare()
-            after_file_prepaired.send(self)
+            after_file_prepared.send(self)
 
     @property
     def is_new(self):

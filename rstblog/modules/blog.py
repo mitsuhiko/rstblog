@@ -18,7 +18,7 @@ from jinja2 import contextfunction
 from werkzeug.routing import Rule, Map, NotFound
 from werkzeug.contrib.atom import AtomFeed
 
-from rstblog.signals import after_file_prepaired, \
+from rstblog.signals import after_file_prepared, \
      before_build_finished
 from rstblog.utils import Pagination
 
@@ -165,7 +165,7 @@ def write_blog_files(builder):
 
 
 def setup(builder):
-    after_file_prepaired.connect(process_blog_entry)
+    after_file_prepared.connect(process_blog_entry)
     before_build_finished.connect(write_blog_files)
     builder.register_url('blog_index', config_key='modules.blog.index_url',
                          config_default='/', defaults={'page': 1})

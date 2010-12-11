@@ -18,8 +18,8 @@ signals = Namespace()
 #: will already be stored on the context.
 before_file_processed = signals.signal('before_file_processed')
 
-#: after the file was prepaired
-after_file_prepaired = signals.signal('after_file_prepaired')
+#: after the file was prepared
+after_file_prepared = signals.signal('after_file_prepared')
 
 #: fired the moment before a template is rendered with the context object
 #: that is about to be passed to the template.
