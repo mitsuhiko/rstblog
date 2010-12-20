@@ -1,17 +1,16 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='rstblog',
     version='1.0',
     author='Armin Ronacher <armin.ronacher@active-4.com>',
-    packages=find_packages(),
+    packages=['rstblog', 'rstblog.modules'],
     description='',
     long_description='',
     include_package_data = True,
-    license="MIT License",
+    license='BSD License',
     entry_points = {
-    'console_scripts': [ 'run-rstblog = rstblog.cli:main',
-                         ],
+        'console_scripts': ['run-rstblog = rstblog.cli:main'],
     },
-    install_requires=['PyYAML', 'Babel', 'blinker', 'jinja2'],
-    )
+    install_requires=['PyYAML', 'Babel', 'blinker', 'Jinja2']
+)
