@@ -7,7 +7,6 @@ setup(
     packages=['rstblog', 'rstblog.modules'],
     description='',
     long_description='',
-    include_package_data = True,
     license='BSD License',
     entry_points = {
         'console_scripts': ['run-rstblog = rstblog.cli:main'],
