@@ -146,7 +146,7 @@ class Context(object):
         if type is None:
             type = 'text/css'
         self.links.append({
-            'href':     '/' + posixpath.join(self.builder.static_folder, href),
+            'href':     self.builder.get_static_url(href),
             'type':     type,
             'media':    media,
             'rel':      'stylesheet'
@@ -236,9 +236,15 @@ class Builder(object):
             rule = self.config.root_get(config_key, config_default)
         self.url_map.add(Rule(rule, endpoint=key, **extra))
 
+    def get_full_static_filename(self, filename):
+        return os.path.join(self.default_output_folder,
+                            self.static_folder, filename)
+
+    def get_static_url(self, filename):
+        return '/' + posixpath.join(self.static_folder, filename)
+
     def open_static_file(self, filename, mode='w'):
-        full_filename = os.path.join(self.default_output_folder,
-                                     self.static_folder, filename)
+        full_filename = self.get_full_static_filename(filename)
         folder = os.path.dirname(full_filename)
         if not os.path.isdir(folder):
             os.makedirs(folder)
