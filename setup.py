@@ -11,5 +11,6 @@ setup(
     entry_points = {
         'console_scripts': ['run-rstblog = rstblog.cli:main'],
     },
-    install_requires=['PyYAML', 'Babel', 'blinker', 'Jinja2']
+    install_requires=['PyYAML', 'Babel', 'blinker', 'Jinja2'],
+    include_package_data=True
 )
