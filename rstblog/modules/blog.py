@@ -85,7 +85,8 @@ def get_all_entries(builder):
     for year, months in years:
         for month, contexts in months.iteritems():
             result.extend(contexts)
-    result.sort(key=lambda x: x.pub_date, reverse=True)
+    result.sort(key=lambda x: (x.pub_date, x.config.get('day-order', 0)),
+                reverse=True)
     return result
 
 
