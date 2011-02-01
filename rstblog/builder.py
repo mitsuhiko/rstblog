@@ -129,7 +129,7 @@ class Context(object):
                               writer_name='html4css1',
                               settings_overrides=settings)
         return {
-            'title':        parts['title'],
+            'title':        Markup(parts['title']).striptags(),
             'html_title':   Markup(parts['html_title']),
             'fragment':     Markup(parts['fragment'])
         }
