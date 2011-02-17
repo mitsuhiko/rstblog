@@ -18,7 +18,7 @@ from jinja2 import contextfunction
 from werkzeug.routing import Rule, Map, NotFound
 from werkzeug.contrib.atom import AtomFeed
 
-from rstblog.signals import after_file_prepared, \
+from rstblog.signals import after_file_published, \
      before_build_finished
 from rstblog.utils import Pagination
 
@@ -146,8 +146,10 @@ def write_archive_pages(builder):
 def write_feed(builder):
     blog_author = builder.config.root_get('author')
     url = builder.config.root_get('canonical_url') or 'http://localhost/'
-    feed = AtomFeed(u'Recent Blog Posts',
-                    subtitle=u'Recent blog posts',
+    name = builder.config.get('feed.name') or u'Recent Blog Posts'
+    subtitle = builder.config.get('feed.subtitle') or u'Recent blog posts'
+    feed = AtomFeed(name,
+                    subtitle=subtitle,
                     feed_url=urljoin(url, builder.link_to('blog_feed')),
                     url=url)
     for entry in get_all_entries(builder)[:10]:
@@ -166,7 +168,7 @@ def write_blog_files(builder):
 
 
 def setup(builder):
-    after_file_prepared.connect(process_blog_entry)
+    after_file_published.connect(process_blog_entry)
     before_build_finished.connect(write_blog_files)
     builder.register_url('blog_index', config_key='modules.blog.index_url',
                          config_default='/', defaults={'page': 1})

@@ -21,6 +21,9 @@ before_file_processed = signals.signal('before_file_processed')
 #: after the file was prepared
 after_file_prepared = signals.signal('after_file_prepared')
 
+#: after the file was published (public: yes)
+after_file_published = signals.signal('after_file_published')
+
 #: fired the moment before a template is rendered with the context object
 #: that is about to be passed to the template.
 before_template_rendered = signals.signal('before_template_rendered')
