@@ -24,7 +24,8 @@ from werkzeug import url_unquote
 
 from rstblog.signals import before_file_processed, \
      before_template_rendered, before_build_finished, \
-     before_file_built, after_file_prepared
+     before_file_built, after_file_prepared, \
+     after_file_published
 from rstblog.modules import find_module
 from rstblog.programs import RSTProgram, CopyProgram
 
@@ -58,10 +59,16 @@ class Context(object):
         if prepare:
             self.program.prepare()
             after_file_prepared.send(self)
+            if self.public:
+                after_file_published.send(self)
 
     @property
     def is_new(self):
         return not os.path.exists(self.full_destination_filename)
+
+    @property
+    def public(self):
+        return self.config.get('public', True)
 
     @property
     def slug(self):

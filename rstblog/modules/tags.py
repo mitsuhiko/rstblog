@@ -15,7 +15,7 @@ from jinja2 import contextfunction
 
 from werkzeug.contrib.atom import AtomFeed
 
-from rstblog.signals import after_file_prepared, \
+from rstblog.signals import after_file_published, \
      before_build_finished
 
 
@@ -75,8 +75,10 @@ def write_tagcloud_page(builder):
 def write_tag_feed(builder, tag):
     blog_author = builder.config.root_get('author')
     url = builder.config.root_get('canonical_url') or 'http://localhost/'
-    feed = AtomFeed(u'Recent Blog Posts',
-                    subtitle=u'Recent blog posts',
+    name = builder.config.get('feed.name') or u'Recent Blog Posts'
+    subtitle = builder.config.get('feed.subtitle') or u'Recent blog posts'
+    feed = AtomFeed(name,
+                    subtitle=subtitle,
                     feed_url=urljoin(url, builder.link_to('blog_feed')),
                     url=url)
     for entry in get_tagged_entries(builder, tag)[:10]:
@@ -107,7 +109,7 @@ def write_tag_files(builder):
 
 
 def setup(builder):
-    after_file_prepared.connect(remember_tags)
+    after_file_published.connect(remember_tags)
     before_build_finished.connect(write_tag_files)
     builder.register_url('tag', config_key='modules.tags.tag_url',
                          config_default='/tags/<tag>/')
