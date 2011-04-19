@@ -27,7 +27,7 @@ DOC_WRAPPER = r'''
 \usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{amsfonts}
-\usepackage{mathpazo}
+%%\usepackage{mathpazo}
 \usepackage{bm}
 \usepackage[active]{preview}
 \pagestyle{empty}
@@ -98,6 +98,7 @@ def render_math(context, math):
         dvipng_args = ['dvipng', '-o', full_filename, '-T', 'tight', '-z9',
                        '-D', str(int(context.builder.config.root_get(
                             'modules.latex.font_size', 16) * 72.27 / 10)),
+                       '-bg', 'Transparent',
                        '--depth', os.path.join(tempdir, 'math.dvi')]
         p = Popen(dvipng_args, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
