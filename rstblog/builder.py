@@ -12,6 +12,7 @@ import re
 import os
 import posixpath
 from fnmatch import fnmatch
+from urlparse import urlparse
 
 from docutils.core import publish_parts
 
@@ -55,7 +56,9 @@ class Context(object):
             self.program_name = self.builder.guess_program(
                 config, source_filename)
         self.program = self.builder.programs[self.program_name](self)
-        self.destination_filename = self.program.get_desired_filename()
+        self.destination_filename = os.path.join(
+            self.builder.prefix_path.lstrip('/'),
+            self.program.get_desired_filename())
         if prepare:
             self.program.prepare()
             after_file_prepared.send(self)
@@ -188,7 +191,10 @@ class Builder(object):
         self.modules = []
         self.storage = {}
         self.url_map = Map()
-        self.url_adapter = self.url_map.bind('dummy.invalid')
+        parsed = urlparse(self.config.root_get('canonical_url'))
+        self.prefix_path = parsed.path
+        self.url_adapter = self.url_map.bind('dummy.invalid',
+            script_name=self.prefix_path)
         self.register_url('page', '/<path:slug>')
 
         template_path = os.path.join(self.project_folder,
