@@ -34,7 +34,8 @@ class MonthArchive(object):
 
     @property
     def month_name(self):
-        return self.builder.format_date(date(self.year, self.month, 1),
+        return self.builder.format_date(date(int(self.year),
+                                        int(self.month), 1),
                                         format='MMMM')
 
     @property
@@ -48,7 +49,7 @@ class YearArchive(object):
         self.year = year
         self.months = [MonthArchive(builder, year, month, entries)
                        for month, entries in months.iteritems()]
-        self.months.sort(key=lambda x: -x.month)
+        self.months.sort(key=lambda x: -int(x.month))
         self.count = sum(len(x.entries) for x in self.months)
 
 
@@ -74,7 +75,8 @@ def process_blog_entry(context):
     if context.pub_date is not None:
         context.builder.get_storage('blog') \
             .setdefault(context.pub_date.year, {}) \
-            .setdefault(context.pub_date.month, []).append(context)
+            .setdefault(('0%d' % context.pub_date.month)[-2:], []) \
+            .append(context)
 
 
 def get_all_entries(builder):
