@@ -78,8 +78,8 @@ class Context(object):
         directory, filename = os.path.split(self.source_filename)
         basename, ext = os.path.splitext(filename)
         if basename == 'index':
-            return posixpath.join(directory, basename).rstrip('/')
-        return posixpath.join(directory, basename)
+            return posixpath.join(directory, basename).rstrip('/').replace('\\', '/')
+        return posixpath.join(directory, basename).replace('\\', '/')
 
     def make_destination_folder(self):
         folder = self.destination_folder
