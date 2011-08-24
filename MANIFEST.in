@@ -1,2 +1,2 @@
 include MANIFEST.in Makefile README LICENSE
-recursive-include rstblog/templates/ *
+recursive-include rstblog/templates *
