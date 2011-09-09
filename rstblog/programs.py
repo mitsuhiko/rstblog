@@ -93,7 +93,8 @@ class RSTProgram(TemplatedProgram):
         cfg = yaml.load(StringIO('\n'.join(headers)))
         if cfg:
             if not isinstance(cfg, dict):
-                raise ValueError('expected dict config in file')
+                raise ValueError('expected dict config in file "%s", got: %.40r' \
+                    % (self.context.source_filename, cfg))
             self.context.config = self.context.config.add_from_dict(cfg)
             self.context.destination_filename = cfg.get(
                 'destination_filename',
