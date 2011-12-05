@@ -135,9 +135,17 @@ class Context(object):
             'initial_header_level': self.config.get('rst_header_level', 2),
             'rstblog_context':      self
         }
-        parts = publish_parts(source=contents,
-                              writer_name='html4css1',
-                              settings_overrides=settings)
+        kwargs = {
+            'source': contents,
+            'settings_overrides': settings
+        }
+        html_writer = None
+        if self.config.get('html_writer'):
+            html_writer = __import__(self.config.get('html_writer'))
+            kwargs['writer'] = html_writer()
+        else:
+            kwargs['writer_name'] = 'html4css1'
+        parts = publish_parts(**kwargs)
         return {
             'title':        Markup(parts['title']).striptags(),
             'html_title':   Markup(parts['html_title']),
