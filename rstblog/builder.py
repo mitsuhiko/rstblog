@@ -141,7 +141,16 @@ class Context(object):
         }
         html_writer = None
         if self.config.get('html_writer'):
-            html_writer = __import__(self.config.get('html_writer'))
+            # TODO: at the moment this only supports
+            # module1.module2.ClassHere type imports
+
+            # first we need to split up the importer
+            writer_parts = self.config.get('html_writer').split('.')
+            # import using fromlist
+            importer = __import__('.'.join(writer_parts[:-1]),
+                                  fromlist=writer_parts[-1:])
+            # fetch the class itself
+            html_writer = getattr(importer, writer_parts[-1])
             kwargs['writer'] = html_writer()
         else:
             kwargs['writer_name'] = 'html4css1'
