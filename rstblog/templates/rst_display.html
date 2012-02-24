@@ -18,4 +18,8 @@
       <a href="{{ link_to('tag', tag=tag) }}">{{ tag }}</a>
     {%- endfor %}
   {% endif %}
+
+  {% if 'disqus' in config.active_modules %}
+    {{ get_disqus()|safe }}
+  {% endif %}
 {% endblock %}
