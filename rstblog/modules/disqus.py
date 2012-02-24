@@ -15,9 +15,9 @@
     :copyright: (c) 2012 by Martin Andrews.
     :license: BSD, see LICENSE for more details.
 """
-from jinja2 import contextfunction
+import jinja2
 
-@contextfunction
+@jinja2.contextfunction
 def get_disqus(context):
     var_shortname=context['builder'].config.root_get('modules.disqus.shortname', 'YOUR-DISQUS-SHORTNAME')
 
@@ -45,7 +45,7 @@ def get_disqus(context):
     if not context['config'].get('disqus', True):
         disqus_txt='' # "<h1>DISQUS DEFEATED</h1>"
         
-    return disqus_txt.encode('utf-8')
+    return jinja2.Markup(disqus_txt.encode('utf-8'))
 
 
 def setup(builder):
