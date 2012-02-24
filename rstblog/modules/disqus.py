@@ -5,10 +5,10 @@
 
     Implements disqus element if asked for.
     
-    To use this, include disqus in the list of modules in your config.yml file,
-    and add a configuration variable to match your settings : disqus.shortname 
+    To use this, include disqus in the list of modules in your ``config.yml`` file,
+    and add a configuration variable to match your settings : ``disqus.shortname`` 
     
-    To prevent comments on a particular page, set disqus = no in the page's YAML preamble.
+    To prevent comments on a particular page, set ``disqus = no`` in the page's YAML preamble.
 
     :copyright: (c) 2012 by Martin Andrews.
     :license: BSD, see LICENSE for more details.
