@@ -5,7 +5,7 @@
 
     Implements disqus element if asked for.
     
-    To use this, include disqus in the list of modules in your ``config.yml`` file,
+    To use this, include ``disqus`` in the list of modules in your ``config.yml`` file,
     and add a configuration variable to match your settings : ``disqus.shortname`` 
     
     To set developer mode on the site, set ``disqus.developer=1`` in your ``config.yml`` file.
