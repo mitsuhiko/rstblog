@@ -8,6 +8,7 @@ setup(
     description='',
     long_description='',
     license='BSD License',
+    include_package_data=True,
     entry_points = {
         'console_scripts': ['run-rstblog = rstblog.cli:main'],
     },

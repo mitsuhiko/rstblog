@@ -135,9 +135,26 @@ class Context(object):
             'initial_header_level': self.config.get('rst_header_level', 2),
             'rstblog_context':      self
         }
-        parts = publish_parts(source=contents,
-                              writer_name='html4css1',
-                              settings_overrides=settings)
+        kwargs = {
+            'source': contents,
+            'settings_overrides': settings
+        }
+        html_writer = None
+        if self.config.get('html_writer'):
+            # TODO: at the moment this only supports
+            # module1.module2.ClassHere type imports
+
+            # first we need to split up the importer
+            writer_parts = self.config.get('html_writer').split('.')
+            # import using fromlist
+            importer = __import__('.'.join(writer_parts[:-1]),
+                                  fromlist=writer_parts[-1:])
+            # fetch the class itself
+            html_writer = getattr(importer, writer_parts[-1])
+            kwargs['writer'] = html_writer()
+        else:
+            kwargs['writer_name'] = 'html4css1'
+        parts = publish_parts(**kwargs)
         return {
             'title':        Markup(parts['title']).striptags(),
             'html_title':   Markup(parts['html_title']),
