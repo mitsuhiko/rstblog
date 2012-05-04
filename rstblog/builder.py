@@ -28,7 +28,7 @@ from rstblog.signals import before_file_processed, \
      before_file_built, after_file_prepared, \
      after_file_published
 from rstblog.modules import find_module
-from rstblog.programs import RSTProgram, CopyProgram
+from rstblog.programs import RSTProgram, CopyProgram, ExecProgram
 
 
 OUTPUT_FOLDER = '_build'
@@ -55,7 +55,10 @@ class Context(object):
         if self.program_name is None:
             self.program_name = self.builder.guess_program(
                 config, source_filename)
-        self.program = self.builder.programs[self.program_name](self)
+        if self.program_name.startswith('!'):
+            self.program = ExecProgram(self, self.program_name[1:])
+        else:
+            self.program = self.builder.programs[self.program_name](self)
         self.destination_filename = os.path.join(
             self.builder.prefix_path.lstrip('/'),
             self.program.get_desired_filename())
