@@ -5,6 +5,7 @@ setup(
     version='1.0',
     author='Armin Ronacher <armin.ronacher@active-4.com>',
     packages=['rstblog', 'rstblog.modules'],
+    include_package_data=True,
     description='',
     long_description='',
     license='BSD License',
