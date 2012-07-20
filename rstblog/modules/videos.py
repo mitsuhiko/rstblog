@@ -11,7 +11,8 @@
     argument is the video id of the video to include.
 
     Both directives have three optional arguments: ``height``, ``width``
-    and ``align``. Default height is 281 and default width is 500.
+    and ``align``. Default height is 281 and default width is 500. If ``align``
+    is not set, it defaults to ``none``.
 
     Example::
 
@@ -30,7 +31,7 @@ from docutils.parsers.rst import Directive, directives
 
 def align(argument):
     """Conversion function for the "align" option."""
-    return directives.choice(argument, ('left', 'center', 'right'))
+    return directives.choice(argument, ('left', 'center', 'right', 'none'))
 
 
 class IframeVideo(Directive):
@@ -53,7 +54,7 @@ class IframeVideo(Directive):
         if not self.options.get('height'):
             self.options['height'] = self.default_height
         if not self.options.get('align'):
-            self.options['align'] = 'left'
+            self.options['align'] = 'none'
         return [nodes.raw('', self.html % self.options, format='html')]
 
 
