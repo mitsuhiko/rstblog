@@ -318,7 +318,7 @@ class Builder(object):
             dirnames[:] = self.filter_files(dirnames, local_config)
             filenames = self.filter_files(filenames, local_config)
 
-            for filename in filenames:
+            for filename in sorted(filenames):
                 yield Context(self, local_config, os.path.join(
                     dirpath[cutoff:], filename), prepare)
 
