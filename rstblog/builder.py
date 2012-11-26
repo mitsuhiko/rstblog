@@ -136,7 +136,7 @@ class Context(object):
             'rstblog_context':      self
         }
         parts = publish_parts(source=contents,
-                              writer_name='html4css1',
+                              writer_name=self.config.get('rst_writer', 'html4css1'),
                               settings_overrides=settings)
         return {
             'title':        Markup(parts['title']).striptags(),
