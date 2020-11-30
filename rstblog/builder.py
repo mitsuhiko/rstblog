@@ -21,7 +21,7 @@ from jinja2 import Environment, FileSystemLoader, Markup
 from babel import Locale, dates
 
 from werkzeug.routing import Map, Rule
-from werkzeug import url_unquote
+from werkzeug.urls import url_unquote
 
 from rstblog.signals import before_file_processed, \
      before_template_rendered, before_build_finished, \
