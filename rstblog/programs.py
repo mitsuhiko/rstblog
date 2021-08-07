@@ -10,7 +10,9 @@
 """
 from __future__ import with_statement
 import os
+import subprocess
 import yaml
+import shlex
 import shutil
 from datetime import datetime
 from StringIO import StringIO
@@ -58,6 +60,64 @@ class CopyProgram(Program):
 
     def get_desired_filename(self):
         return self.context.source_filename
+
+
+class ExecProgram(Program):
+    """A program that invokes an external tool.
+
+    The command passed to the constructor is parsed as a shell command using
+    shlex.split.  There should be two parameters which begin with ``%``: the
+    first of these is treated as the input file name and the second is the
+    output file name.  Any text following the ``%`` character is taken as an
+    extension to be removed from/added to the filename.  For example::
+
+        lessc %.less %.css
+
+    invokes ``lessc``, renaming any files called ``*.less`` to ``*.css``,
+    effectively performing the same operation as the shell command::
+
+        $ lessc /input/path/${filename} /output/path/${filename%%.less}.css
+
+    """
+
+    def __init__(self, context, command):
+        Program.__init__(self, context)
+        self._command = []
+        self.source_file_index = -1
+        self.source_suffix = ''
+        self.destination_file_index = -1
+        self.destination_suffix = ''
+        for i, part in enumerate(shlex.split(command)):
+            if part.startswith('%'):
+                if -1 == self.source_file_index:
+                    self.source_file_index = i
+                    self.source_suffix = part[1:]
+                elif -1 == self.destination_file_index:
+                    self.destination_file_index = i
+                    self.destination_suffix = part[1:]
+                else:
+                    raise ValueError('too many %.* parameters in command')
+            self._command.append(part)
+        if self.destination_file_index == -1:
+            raise ValueError('too few %.* parameters in command')
+
+    def command(self, source_file, destination_file):
+        command = list(self._command)
+        command[self.source_file_index] = source_file
+        command[self.destination_file_index] = destination_file
+        return command
+
+    def run(self):
+        self.context.make_destination_folder()
+        cmd = self.command(self.context.full_source_filename,
+                           self.context.full_destination_filename)
+        subprocess.check_call(cmd)
+
+    def get_desired_filename(self):
+        fn = self.context.source_filename
+        if fn.endswith(self.source_suffix):
+            return fn[:-len(self.source_suffix)] + self.destination_suffix
+        return fn
 
 
 class TemplatedProgram(Program):
