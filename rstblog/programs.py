@@ -9,11 +9,12 @@
     :license: BSD, see LICENSE for more details.
 """
 from __future__ import with_statement
+from __future__ import absolute_import
 import os
 import yaml
 import shutil
 from datetime import datetime
-from StringIO import StringIO
+from io import StringIO
 from weakref import ref
 
 
@@ -72,7 +73,7 @@ class TemplatedProgram(Program):
         context = self.get_template_context()
         rv = self.context.render_template(template_name, context)
         with self.context.open_destination_file() as f:
-            f.write(rv.encode('utf-8') + '\n')
+            f.write(rv.encode('utf-8') + b'\n')
 
 
 class RSTProgram(TemplatedProgram):
@@ -84,13 +85,13 @@ class RSTProgram(TemplatedProgram):
         headers = ['---']
         with self.context.open_source_file() as f:
             for line in f:
-                line = line.rstrip()
+                line = line.rstrip().decode("utf-8")
                 if not line:
                     break
                 headers.append(line)
             title = self.parse_text_title(f)
 
-        cfg = yaml.load(StringIO('\n'.join(headers)))
+        cfg = yaml.safe_load(StringIO('\n'.join(headers)))
         if cfg:
             if not isinstance(cfg, dict):
                 raise ValueError('expected dict config in file "%s", got: %.40r' \
@@ -126,7 +127,7 @@ class RSTProgram(TemplatedProgram):
             if not line:
                 break
             buffer.append(line)
-        return self.context.render_rst('\n'.join(buffer).decode('utf-8')).get('title')
+        return self.context.render_rst(b'\n'.join(buffer).decode('utf-8')).get('title')
 
     def get_fragments(self):
         if self._fragment_cache is not None:

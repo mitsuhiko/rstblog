@@ -8,9 +8,12 @@
     :copyright: (c) 2010 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import absolute_import
 from math import ceil
 
 from jinja2 import Markup
+import six
+from six.moves import range
 
 
 class Pagination(object):
@@ -70,7 +73,7 @@ class Pagination(object):
         from the sides.  Skipped page numbers are represented as `None`.
         """
         last = 0
-        for num in xrange(1, self.pages + 1):
+        for num in range(1, self.pages + 1):
             if num <= left_edge or \
                (num > self.page - left_current - 1 and \
                 num < self.page + right_current) or \
@@ -81,12 +84,9 @@ class Pagination(object):
                 last = num
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return self.builder.render_template('_pagination.html', {
             'pagination':   self
         })
 
     def __html__(self):
-        return Markup(unicode(self))
+        return Markup(six.text_type(self))

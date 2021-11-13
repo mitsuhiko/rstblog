@@ -10,8 +10,9 @@
 """
 from __future__ import with_statement
 
+from __future__ import absolute_import
 from datetime import datetime, date
-from urlparse import urljoin
+from six.moves.urllib.parse import urljoin
 
 from jinja2 import contextfunction
 
@@ -21,6 +22,7 @@ from werkzeug.contrib.atom import AtomFeed
 from rstblog.signals import after_file_published, \
      before_build_finished
 from rstblog.utils import Pagination
+import six
 
 
 class MonthArchive(object):
@@ -48,7 +50,7 @@ class YearArchive(object):
     def __init__(self, builder, year, months):
         self.year = year
         self.months = [MonthArchive(builder, year, month, entries)
-                       for month, entries in months.iteritems()]
+                       for month, entries in six.iteritems(months)]
         self.months.sort(key=lambda x: -int(x.month))
         self.count = sum(len(x.entries) for x in self.months)
 
@@ -83,9 +85,9 @@ def get_all_entries(builder):
     """Returns all blog entries in reverse order"""
     result = []
     storage = builder.get_storage('blog')
-    years = storage.items()
+    years = list(storage.items())
     for year, months in years:
-        for month, contexts in months.iteritems():
+        for month, contexts in six.iteritems(months):
             result.extend(contexts)
     result.sort(key=lambda x: (x.pub_date, x.config.get('day-order', 0)),
                 reverse=True)
@@ -95,7 +97,7 @@ def get_all_entries(builder):
 def get_archive_summary(builder):
     """Returns a summary of the stuff in the archives."""
     storage = builder.get_storage('blog')
-    years = storage.items()
+    years = list(storage.items())
     years.sort(key=lambda x: -x[0])
     return [YearArchive(builder, year, months) for year, months in years]
 
@@ -116,7 +118,7 @@ def write_index_page(builder):
                 'pagination':       pagination,
                 'show_pagination':  use_pagination
             })
-            f.write(rv.encode('utf-8') + '\n')
+            f.write(rv.encode('utf-8') + b'\n')
             if not use_pagination or not pagination.has_next:
                 break
             pagination = pagination.get_next()
@@ -128,21 +130,21 @@ def write_archive_pages(builder):
         rv = builder.render_template('blog/archive.html', {
             'archive':      archive
         })
-        f.write(rv.encode('utf-8') + '\n')
+        f.write(rv.encode('utf-8') + b'\n')
 
     for entry in archive:
         with builder.open_link_file('blog_archive', year=entry.year) as f:
             rv = builder.render_template('blog/year_archive.html', {
                 'entry':    entry
             })
-            f.write(rv.encode('utf-8') + '\n')
+            f.write(rv.encode('utf-8') + b'\n')
         for subentry in entry.months:
             with builder.open_link_file('blog_archive', year=entry.year,
                                         month=subentry.month) as f:
                 rv = builder.render_template('blog/month_archive.html', {
                     'entry':    subentry
                 })
-                f.write(rv.encode('utf-8') + '\n')
+                f.write(rv.encode('utf-8') + b'\n')
 
 
 def write_feed(builder):
@@ -155,12 +157,12 @@ def write_feed(builder):
                     feed_url=urljoin(url, builder.link_to('blog_feed')),
                     url=url)
     for entry in get_all_entries(builder)[:10]:
-        feed.add(entry.title, unicode(entry.render_contents()),
+        feed.add(entry.title, six.text_type(entry.render_contents()),
                  content_type='html', author=blog_author,
                  url=urljoin(url, entry.slug),
                  updated=entry.pub_date)
     with builder.open_link_file('blog_feed') as f:
-        f.write(feed.to_string().encode('utf-8') + '\n')
+        f.write(feed.to_string().encode('utf-8') + b'\n')
 
 
 def write_blog_files(builder):

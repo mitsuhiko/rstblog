@@ -15,6 +15,7 @@
     :copyright: (c) 2012 by Martin Andrews.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import absolute_import
 import jinja2
 
 @jinja2.contextfunction

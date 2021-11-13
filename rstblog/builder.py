@@ -8,11 +8,13 @@
     :copyright: (c) 2010 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import os
 import posixpath
 from fnmatch import fnmatch
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from docutils.core import publish_parts
 
@@ -29,6 +31,7 @@ from rstblog.signals import before_file_processed, \
      after_file_published
 from rstblog.modules import find_module
 from rstblog.programs import RSTProgram, CopyProgram
+import six
 
 
 OUTPUT_FOLDER = '_build'
@@ -86,10 +89,10 @@ class Context(object):
         if not os.path.isdir(folder):
             os.makedirs(folder)
 
-    def open_source_file(self, mode='r'):
+    def open_source_file(self, mode='rb'):
         return open(self.full_source_filename, mode)
 
-    def open_destination_file(self, mode='w'):
+    def open_destination_file(self, mode='wb'):
         self.make_destination_folder()
         return open(self.full_destination_filename, mode)
 
@@ -231,12 +234,12 @@ class Builder(object):
         return self.url_adapter.build(_key, values)
 
     def get_link_filename(self, _key, **values):
-        link = url_unquote(self.link_to(_key, **values).lstrip('/')).encode('utf-8')
+        link = url_unquote(self.link_to(_key, **values).lstrip('/'))
         if not link or link.endswith('/'):
             link += 'index.html'
         return os.path.join(self.default_output_folder, link)
 
-    def open_link_file(self, _key, mode='w', **values):
+    def open_link_file(self, _key, mode='wb', **values):
         filename = self.get_link_filename(_key, **values)
         folder = os.path.dirname(filename)
         if not os.path.isdir(folder):
@@ -282,7 +285,7 @@ class Builder(object):
 
     def guess_program(self, config, filename):
         mapping = config.list_entries('programs') or self.default_programs
-        for pattern, program_name in mapping.iteritems():
+        for pattern, program_name in six.iteritems(mapping):
             if fnmatch(filename, pattern):
                 return program_name
         return 'copy'
@@ -336,13 +339,13 @@ class Builder(object):
             if context.needs_build:
                 key = context.is_new and 'A' or 'U'
                 context.run()
-                print key, context.source_filename
+                print(key, context.source_filename)
 
         before_build_finished.send(self)
 
     def debug_serve(self, host='127.0.0.1', port=5000):
         from rstblog.server import Server
-        print 'Serving on http://%s:%d/' % (host, port)
+        print('Serving on http://%s:%d/' % (host, port))
         try:
             Server(host, port, self).serve_forever()
         except KeyboardInterrupt:

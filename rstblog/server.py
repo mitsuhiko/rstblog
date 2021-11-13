@@ -8,27 +8,29 @@
     :copyright: (c) 2010 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import sys
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import posixpath
-from BaseHTTPServer import HTTPServer
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+from six.moves.BaseHTTPServer import HTTPServer
+from six.moves.SimpleHTTPServer import SimpleHTTPRequestHandler
 
 
 class SimpleRequestHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.server.builder.anything_needs_build():
-            print >> sys.stderr, 'Detected change, building'
+            print('Detected change, building', file=sys.stderr)
             self.server.builder.run()
         SimpleHTTPRequestHandler.do_GET(self)
 
     def translate_path(self, path):
         path = path.split('?', 1)[0].split('#', 1)[0]
-        path = posixpath.normpath(urllib.unquote(path))
+        path = posixpath.normpath(six.moves.urllib.parse.unquote(path))
         words = path.split('/')
-        words = filter(None, words)
+        words = [_f for _f in words if _f]
         path = self.server.builder.default_output_folder
         for word in words:
             drive, word = os.path.splitdrive(word)

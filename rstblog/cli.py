@@ -9,6 +9,8 @@
     :license: BSD, see LICENSE for more details.
 """
 from __future__ import with_statement
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import os
 from rstblog.config import Config
@@ -29,7 +31,7 @@ def get_builder(project_folder):
 def main():
     """Entrypoint for the console script."""
     if len(sys.argv) not in (1, 2, 3):
-        print >> sys.stderr, 'usage: rstblog <action> <folder>'
+        print('usage: rstblog <action> <folder>', file=sys.stderr)
     if len(sys.argv) >= 2:
         action = sys.argv[1]
     else:
@@ -39,7 +41,7 @@ def main():
     else:
         folder = os.getcwd()
     if action not in ('build', 'serve'):
-        print >> sys.stderr, 'unknown action', action
+        print('unknown action', action, file=sys.stderr)
     builder = get_builder(folder)
 
     if action == 'build':

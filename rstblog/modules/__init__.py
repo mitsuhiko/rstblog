@@ -10,6 +10,7 @@
 """
 
 
+from __future__ import absolute_import
 def add_module_path(folder):
     """Adds a new search path to the list of search paths."""
     import os

@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Armin Ronacher.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import absolute_import
 from blinker import Namespace
 
 

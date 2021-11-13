@@ -8,6 +8,7 @@
     :copyright: (c) 2010 by Armin Ronacher, Georg Brandl.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import absolute_import
 import os
 import re
 import tempfile
@@ -38,7 +39,7 @@ DOC_WRAPPER = r'''
 \end{document}
 '''
 
-_depth_re = re.compile(r'\[\d+ depth=(-?\d+)\]')
+_depth_re = re.compile(rb'\[\d+ depth=(-?\d+)\]')
 
 
 def wrap_displaymath(math):
@@ -70,7 +71,7 @@ def render_math(context, math):
     depth = None
     tempdir = tempfile.mkdtemp()
     try:
-        tf = open(path.join(tempdir, 'math.tex'), 'w')
+        tf = open(path.join(tempdir, 'math.tex'), 'wb')
         tf.write(latex.encode('utf-8'))
         tf.close()
 
