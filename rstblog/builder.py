@@ -74,7 +74,8 @@ class Context(object):
 
     @property
     def public(self):
-        return self.config.get('public', True)
+        value = self.config.get('public', 'yes')
+        return str(value).lower() in ['y', 'true', 'yes', 'on', 'yeah', 'yep']
 
     @property
     def slug(self):
@@ -336,7 +337,7 @@ class Builder(object):
         contexts = list(self.iter_contexts())
 
         for context in contexts:
-            if context.needs_build:
+            if context.public and context.needs_build:
                 key = context.is_new and 'A' or 'U'
                 context.run()
                 print(key, context.source_filename)
