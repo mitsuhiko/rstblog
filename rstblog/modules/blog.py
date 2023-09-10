@@ -14,11 +14,11 @@ from __future__ import absolute_import
 from datetime import datetime, date
 from six.moves.urllib.parse import urljoin
 
-from jinja2 import contextfunction
+from jinja2 import pass_context
 
-from werkzeug.routing import Rule, Map, NotFound
+from werkzeug.routing import Rule, Map
+from werkzeug.exceptions import NotFound
 from werkzeug.contrib.atom import AtomFeed
-
 from rstblog.signals import after_file_published, \
      before_build_finished
 from rstblog.utils import Pagination
@@ -102,7 +102,7 @@ def get_archive_summary(builder):
     return [YearArchive(builder, year, months) for year, months in years]
 
 
-@contextfunction
+@pass_context
 def get_recent_blog_entries(context, limit=10):
     return get_all_entries(context['builder'])[:limit]
 
