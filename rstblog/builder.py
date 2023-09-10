@@ -18,7 +18,8 @@ from six.moves.urllib.parse import urlparse
 
 from docutils.core import publish_parts
 
-from jinja2 import Environment, FileSystemLoader, Markup
+from jinja2 import Environment, FileSystemLoader
+from markupsafe import Markup
 
 from babel import Locale, dates
 
@@ -207,7 +208,6 @@ class Builder(object):
         self.jinja_env = Environment(
             loader=FileSystemLoader([template_path, builtin_templates]),
             autoescape=self.config.root_get('template_autoescape', True),
-            extensions=['jinja2.ext.autoescape', 'jinja2.ext.with_'],
         )
         self.jinja_env.globals.update(
             link_to=self.link_to,

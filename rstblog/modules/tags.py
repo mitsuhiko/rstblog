@@ -12,7 +12,7 @@ from __future__ import absolute_import
 from math import log
 from six.moves.urllib.parse import urljoin
 
-from jinja2 import contextfunction
+from jinja2 import pass_context
 
 from werkzeug.contrib.atom import AtomFeed
 
@@ -29,7 +29,7 @@ class Tag(object):
         self.size = 100 + log(count or 1) * 20
 
 
-@contextfunction
+@pass_context
 def get_tags(context, limit=50):
     tags = get_tag_summary(context['builder'])
     if limit:
