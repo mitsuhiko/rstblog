@@ -240,6 +240,11 @@ class Builder(object):
             mod.setup(self)
             self.modules.append(mod)
 
+        for extension in self.config.root_get('extensions') or []:
+            mod = __import__(extension, None, None, ['setup'])
+            mod.setup(self)
+            self.modules.append(mod)
+
     @property
     def default_output_folder(self):
         return os.path.join(
