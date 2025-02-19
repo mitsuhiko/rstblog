@@ -17,6 +17,7 @@ from docutils.parsers.rst import Directive, directives
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name, TextLexer
+from pygments.lexers.php import PhpLexer
 from pygments.formatters import HtmlFormatter
 from pygments.styles import get_style_by_name
 
@@ -32,7 +33,11 @@ class CodeBlock(Directive):
 
     def run(self):
         try:
-            lexer = get_lexer_by_name(self.arguments[0])
+            name = self.arguments[0]
+            if name == "phpinline":
+                lexer = PhpLexer(startinline=True)
+            else:
+                lexer = get_lexer_by_name(name)
         except ValueError:
             lexer = TextLexer()
         code = u'\n'.join(self.content)
